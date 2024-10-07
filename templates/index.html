@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Discover and add restaurants, museums, and other places from TikTok videos directly to Google Maps with our easy-to-use tool. Get maps links for any location mentioned in a TikTok video.">
+    <meta name="keywords" content="TikTok to Maps, Add restaurant from TikTok, Google Maps from TikTok, Restaurant TikTok Maps, TikTok locations Google Maps">
+    <meta name="author" content="TikTok to Maps Tool">
+    <title>TikTok to Maps - Add Restaurants, Places from TikTok to Google Maps</title>
+
+    <!-- Bootstrap CDN for styles -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Link to External CSS in /static/css/ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Link to Lato font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+    <!-- User info section -->
+    {% if current_user.is_authenticated %}
+    <div class="user-info">
+        Welcome, {{ current_user.email }} | 
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    {% else %}
+    <div class="user-info">
+        <a href="{{ url_for('login') }}">Login</a> | 
+        <a href="{{ url_for('signup') }}">Sign Up</a>
+    </div>
+    {% endif %}
+
+    <!-- Logo at the top left -->
+    <div class="header">
+        <a href="/">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+        </a>
+    </div>
+
+    <div class="container">
+        <!-- Main Header with Primary Keyword -->
+        <h1 class="main-heading">TikTok to Maps: Add Restaurants and Places from TikTok to Google Maps</h1>
+        <p class="cta-text">Easily extract restaurant locations, museums, and attractions from TikTok videos and add them to Google Maps.</p>
+
+        <!-- Form Section -->
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('index') }}" id="tiktok-form">
+                <div class="input-wrapper">
+                    <input type="text" name="tiktok_url" id="tiktok-url" placeholder="Enter TikTok URL" required>
+                </div>
+                <div class="button-wrapper">
+                    <button type="submit" class="btn btn-custom" id="extract-button">Extract Places from TikTok</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- How It Works Section with Target Keywords -->
+        <div class="how-it-works-section">
+            <h2 class="section-heading">How it works</h2>
+            <p class="how-it-works-subheading">Effortlessly extract locations like restaurants, cafes, and tourist spots from TikTok videos and save them directly to Google Maps for easy navigation and trip planning.</p>
+        
+            <div class="how-it-works-grid">
+                <div class="how-it-works-item">
+                    <div class="icon-text-wrapper">
+                        <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-upload.png') }}" alt="Icon"></div>
+                        <h3 class="how-it-works-title">Paste TikTok URL</h3>
+                    </div>
+                    <p class="how-it-works-text">Simply paste the URL of any TikTok video featuring restaurants or places.</p>
+                </div>
+        
+                <div class="how-it-works-item">
+                    <div class="icon-text-wrapper">
+                        <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-extract.png') }}" alt="Icon"></div>
+                        <h3 class="how-it-works-title">Extract Locations</h3>
+                    </div>
+                    <p class="how-it-works-text">Our tool identifies and extracts the places mentioned in the video.</p>
+                </div>
+        
+                <div class="how-it-works-item">
+                    <div class="icon-text-wrapper">
+                        <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-save.png') }}" alt="Icon"></div>
+                        <h3 class="how-it-works-title">Get Maps Links</h3>
+                    </div>
+                    <p class="how-it-works-text">Receive direct Google Maps links for restaurants, cafes, and tourist spots.</p>
+                </div>
+        
+                <div class="how-it-works-item">
+                    <div class="icon-text-wrapper">
+                        <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-go.png') }}" alt="Icon"></div>
+                        <h3 class="how-it-works-title">Save & Explore</h3>
+                    </div>
+                    <p class="how-it-works-text">Save the links and explore the locations on your next trip.</p>
+                </div>
+            </div>
+        </div>        
+
+        <!-- User Reviews Section -->
+        <div class="reviews-section">
+            <h2 class="section-heading">What Our Users Say About Adding TikTok Places to Maps</h2>
+            
+            <div class="row">
+                <!-- Review 1 -->
+                <div class="col-md-4">
+                    <div class="review-card">
+                        <h4 class="review-name">Milly M.</h4>
+                        <p class="review-text">"This tool is amazing! I added a restaurant I found on TikTok directly to my Google Maps and visited it the next day."</p>
+                    </div>
+                </div>
+
+                <!-- Review 2 -->
+                <div class="col-md-4">
+                    <div class="review-card">
+                        <h4 class="review-name">Lucas C.</h4>
+                        <p class="review-text">"So easy to use. I can now add any place I see on TikTok straight to Google Maps, including cafes and tourist spots!"</p>
+                    </div>
+                </div>
+
+                <!-- Review 3 -->
+                <div class="col-md-4">
+                    <div class="review-card">
+                        <h4 class="review-name">Alex B.</h4>
+                        <p class="review-text">"Found some great restaurants and cafes on TikTok and added them to my travel list on Google Maps using this tool!"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var form = document.getElementById('tiktok-form');
+            var urlInput = document.getElementById('tiktok-url');
+            var submitButton = document.getElementById('extract-button');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                submitButton.disabled = true;
+                var tiktokUrl = urlInput.value;
+                
+                console.log('Submitting URL:', tiktokUrl);
+
+                fetch('{{ url_for("process") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json', 
+                    },
+                    body: JSON.stringify({tiktok_url: tiktokUrl})
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Server error') });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.error) {
+                        throw new Error(data.error);
+                    } else if (data.status === 'completed' && data.result) {
+                        // Redirect to result page for completed tasks
+                        window.location.href = '{{ url_for("result", task_id="") }}' + data.task_id;
+                    } else if (data.status === 'processing' && data.task_id) {
+                        // Redirect to waiting page for processing tasks
+                        window.location.href = '{{ url_for("waiting", task_id="") }}' + data.task_id;
+                    } else if (data.task_id) {
+                        // Fallback for new tasks
+                        window.location.href = '{{ url_for("waiting", task_id="") }}' + data.task_id;
+                    } else {
+                        throw new Error('Unexpected response from server');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    alert('An error occurred: ' + error.message);
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                });
+            });
+        });
+    </script>
+
+    <!-- Optional JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

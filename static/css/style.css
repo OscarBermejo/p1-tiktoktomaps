@@ -1,0 +1,466 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body styling */
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebaa9c 100%);
+    color: #333;
+    margin: 0;
+    padding: 0;
+    font-family: 'Lato', sans-serif;
+}
+
+
+/* Main Heading Styling */
+.main-heading {
+    font-size: 3.5rem;
+    font-weight: 700;
+    text-align: center;
+    color: #111;
+    margin-top: 80px;
+    margin-bottom: 20px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700; /* Bold weight for headings */
+}
+
+/* Call-to-Action Text */
+.cta-text {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #555;
+    font-family: 'Lato', sans-serif;
+    font-weight: 400; /* Regular weight for body text */
+}
+
+/* Container Styling */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Form Container */
+.form-container {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-container .input-wrapper {
+    margin-bottom: 20px;
+}
+
+.form-container input[type="text"] {
+    width: 100%;
+    max-width: 500px;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border: 2px solid #ddd;
+    border-radius: 30px;
+    transition: border-color 0.3s ease;
+    text-align: center;
+}
+
+.form-container input[type="text"]:focus {
+    outline: none;
+    border-color: #f43b86;
+}
+
+.form-container .button-wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+/* Form Input */
+.form-group {
+    max-width: 600px;
+    margin: 0 auto 20px;
+}
+
+.form-control {
+    padding: 15px;
+    font-size: 1.2rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* Submit Button Styling */
+.btn-custom {
+    background-color: #f43b86;
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+    width: auto;
+    max-width: 300px;
+}
+
+.btn-custom:hover {
+    background-color: #e02e74;
+    color: white;
+}
+
+/* How It Works Section */
+.how-it-works-section {
+    padding: 30px 20px; /* Reduced top padding from 60px to 30px */
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.how-it-works-subheading {
+    font-size: 1.25rem;
+    color: #777;
+    margin-bottom: 30px; /* Reduced from 40px */
+}
+
+/* Grid Layout */
+.how-it-works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    justify-items: center;
+}
+
+.how-it-works-item {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 300px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.how-it-works-item:hover {
+    transform: translateY(-10px);
+}
+
+/* Icon and Text Alignment */
+.icon-text-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* Space between icon and text */
+    margin-bottom: 15px;
+}
+
+.icon-inline {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.icon-inline img {
+    width: 40px; /* Adjust the size as needed */
+    height: 40px;
+}
+
+.how-it-works-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0;
+}
+
+/* Text Description */
+.how-it-works-text {
+    font-size: 1rem;
+    color: #555;
+}
+/* Reviews Section */
+.reviews-section {
+    padding: 40px 20px;
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-heading {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.review-card {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 300px;
+    text-align: center;
+    margin: 0 auto 30px; /* Center and space below */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add smooth transition */
+}
+
+/* Hover Effect for Reviews */
+.review-card:hover {
+    transform: translateY(-10px); /* Move the card up on hover */
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2); /* Slightly deeper shadow on hover */
+}
+
+.review-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.review-text {
+    font-size: 1.1rem;
+    color: #555;
+    font-style: italic;
+}
+
+/* Footer Link for 'Go back' */
+a.btn-custom {
+    display: inline-block;
+    margin-top: 20px;
+    background-color: #f43b86;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+}
+
+a.btn-custom:hover {
+    background-color: #e02e74;
+}
+
+/* Buttons, Ratings & Stars */
+.btn-custom-rating {
+    background-color: #ffd700;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 25px;
+    margin-right: 10px;
+}
+
+.rating-stars {
+    color: #ffd700;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+/* Logo styling */
+.header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.logo {
+    width: 100px; /* Adjust the size as needed */
+    height: auto;
+    cursor: pointer;
+}
+
+/* Error Page */
+.text-danger {
+    color: #dc3545;
+}
+
+.container h1 {
+    margin-top: 50px;
+}
+
+.container p {
+    font-size: 1.2rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 10px 20px;
+    font-size: 1rem;
+}
+
+/* Center the title in the Results Section */
+.results-section h2.section-heading {
+    text-align: center; /* Center the title */
+    font-size: 2rem; /* Adjust the font size if necessary */
+    color: #333; /* Ensure the title is a dark, readable color */
+    margin-bottom: 20px; /* Add space below the title */
+}
+
+/* Style for Results List */
+.results-section ul.list-group {
+    text-align: center; /* Center the list items */
+    padding-left: 0; /* Remove default padding */
+}
+
+.results-section ul.list-group li.list-group-item {
+    background-color: transparent; /* Remove the white background */
+    border: none; /* Remove the borders */
+    padding: 10px 0; /* Adjust padding */
+    color: #555; /* Set grey color for the text */
+    display: inline-block; /* Center the list items */
+    width: auto; /* Adjust width */
+}
+
+.results-section ul.list-group li.list-group-item a {
+    color: #555; /* Set grey color for the link text */
+    text-decoration: none; /* Remove underline */
+}
+
+.results-section ul.list-group li.list-group-item a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+/* Full-Screen Background with Blur Effect */
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url("/path-to-background-image.jpg"); /* Use the same background image as your index.html */
+    background-size: cover; /* Ensures the image covers the entire screen */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+    filter: blur(8px); /* Apply the blur effect */
+    z-index: 1; /* Ensure it stays behind the pop-up content */
+}
+
+/* Results Pop-up Container */
+.results-popup {
+    position: relative;
+    z-index: 10; /* Ensure it's above the blurred background */
+    background-color: rgba(255, 255, 255, 0.95); /* Slightly transparent white background */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    width: 80%;
+    max-width: 600px;
+    margin: 100px auto; /* Center the container */
+    text-align: center;
+    overflow-y: auto; /* Enable scrolling for the content inside the pop-up */
+}
+
+/* List Styling */
+.results-popup ul.list-group {
+    padding-left: 0;
+    margin-top: 20px;
+}
+
+.results-popup ul.list-group li.list-group-item {
+    background-color: transparent; /* No background */
+    border: none; /* Remove borders */
+    padding: 10px 0;
+    color: #555;
+    display: inline-block;
+    width: auto;
+}
+
+.results-popup ul.list-group li.list-group-item a {
+    color: #555; /* Grey text for the links */
+    text-decoration: none;
+}
+
+.results-popup ul.list-group li.list-group-item a:hover {
+    text-decoration: underline;
+}
+
+/* Button Styling */
+.results-popup .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    padding: 10px 20px;
+    font-size: 1rem;
+    margin-top: 20px;
+}
+
+/* Ensure body and html take full height and allow scrolling */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto; /* Enable scrolling for long content */
+}
+
+/* Logo Styling */
+.header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100; /* Ensure the logo is always visible */
+}
+
+.logo {
+    max-width: 100px; /* Adjust the size of the logo */
+}
+
+
+/* User info section */
+.user-info {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    /* background-color: #f8f9fa; */
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+
+.auth-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 350px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.auth-title {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.auth-form {
+    width: 100%;
+}
+
+.auth-form input,
+.auth-form button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.auth-form button {
+    background-color: #f43b86;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-form button:hover {
+    background-color: #e02e74;
+}
+
+.auth-text {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+}

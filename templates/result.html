@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extracted Places from TikTok</title>
+
+    <!-- Bootstrap CDN for styles -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Link to External CSS in /static/css/ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Logo at the top left (outside the results container) -->
+    <div class="header">
+        <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+        </a>
+    </div>
+
+    <!-- Blurred Background Section -->
+    <div class="background-overlay"></div>
+
+    <!-- Results Pop-up Container -->
+    <div class="results-popup">
+        <h2 class="section-heading">Places Extracted from TikTok Video</h2>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% elif links %}
+            {% if links is mapping %}
+                <ul class="list-group">
+                {% for place, link in links.items() %}
+                    <li class="list-group-item">
+                        <a href="{{ link }}" target="_blank">{{ place }}</a>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>Results are not in the expected format.</p>
+            {% endif %}
+        {% else %}
+            <p>No results available.</p>
+        {% endif %}
+        <a href="/" class="btn btn-custom btn-block mt-4">Go Back to Home</a>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

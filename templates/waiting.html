@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Video - TikTok to Maps</title>
+
+    <!-- Bootstrap CDN for styles -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Link to External CSS in /static/css/ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Link to Lato font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- Logo at the top left -->
+    <div class="header">
+        <a href="{{ url_for('index') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+        </a>
+    </div>
+
+    <!-- Blurred Background Section -->
+    <div class="background-overlay"></div>
+
+    <!-- Processing Video Pop-up Container -->
+    <div class="results-popup loading-container">
+        <div class="loading-content">
+            <h2 class="section-heading">TikTok to Maps: Processing Your Video</h2>
+            <div class="spinner-border text-primary mt-4" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p class="loading-text mt-3">Extracting places from your TikTok video...</p>
+        </div>
+    </div>
+
+    <script>
+    function checkTaskStatus() {
+        $.ajax({
+            url: '/check_task/{{ task_id }}',
+            method: 'GET',
+            success: function(data) {
+                console.log('Task status:', data);
+                if (data.status === 'completed') {
+                    window.location.href = '/result/{{ task_id }}';
+                } else {
+                    setTimeout(checkTaskStatus, 5000);
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                console.error('Error checking task status:', textStatus, errorThrown);
+                setTimeout(checkTaskStatus, 5000);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        checkTaskStatus();
+    });
+    </script>
+</body>
+</html>
