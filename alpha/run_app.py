@@ -7,7 +7,7 @@ import time
 sys.path.append(os.path.join(os.path.dirname(__file__), 'alpha'))
 
 # Import the function from download_video.py
-from download_video import test_extract_data_integration
+from download_video import extract_data_integration
 from extract_text_from_video import main as extract_text_main
 from extract_transcription_from_audio import main as extract_transcription_main
 from utils import search_location_v2, query_chatgpt_v2
@@ -15,14 +15,13 @@ import logger_config
 
 logger = logger_config.get_logger(__name__)
 
-
 async def main():
 
     # Measure processing time
     start_time = time.time()
 
     # Call the asynchronous function
-    video_id, video_file, audio_file, description = await test_extract_data_integration()
+    video_id, video_file, audio_file, description = await extract_data_integration()
     logger.info(f"Video ID: {video_id}")
     logger.info(f"Video File: {video_file}")
     logger.info(f"Audio File: {audio_file}")

@@ -101,8 +101,6 @@ def index():
             logger.info('Task info saved to database successfully')
         except Exception as e:
             logger.error(f'Error saving task info to database: {str(e)}')
-            # Even if we fail to save to DB, we can still process the video
-            # So we'll continue to the waiting page
 
         return redirect(url_for('waiting', task_id=task.id))
     
@@ -187,7 +185,13 @@ def check_task(task_id):
         
     if task.ready():
         logger.info(f"Task {task_id} is completed")
-        return jsonify({'status': 'completed', 'result': task.result})
+        if task.successful():
+            return jsonify({'status': 'completed', 'result': task.result})
+        else:
+            # Task failed
+            error_msg = str(task.result) if task.result else "Unknown error occurred"
+            logger.error(f"Task {task_id} failed: {error_msg}")
+            return jsonify({'status': 'failed', 'error': error_msg}), 500
     else:
         logger.info(f"Task {task_id} is still processing, state: {task.state}")
         return jsonify({'status': 'processing', 'state': task.state})
@@ -195,5 +199,4 @@ def check_task(task_id):
 
 if __name__ == '__main__':
     logger.info("Starting Flask application")
-    app.run(host="0.0.0.0", port=8080)
-    #app.run(debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)

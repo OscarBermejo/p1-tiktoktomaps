@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # Now use an absolute import
 from data_extractor import extract_data
 
-async def test_extract_data_integration():
+async def extract_data_integration():
     url = "https://www.tiktok.com/@lilikaramalikis/video/7402402958266076432?_r=1&_t=8p0lP6zCCpE"
     video_file, audio_file, description = await extract_data(url)
     assert video_file.endswith('.mp4')
@@ -16,4 +16,4 @@ async def test_extract_data_integration():
     assert isinstance(description, str)
 
 if __name__ == '__main__':
-    result = asyncio.run(test_extract_data_integration())
+    result = asyncio.run(extract_data_integration())

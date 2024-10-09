@@ -1,13 +1,16 @@
 from celery import Celery
 from celery import shared_task
 from celery_app import celery_app
-from video_processor import analyze_video_content
-from data_extractor import extract_data
-from models import ProcessedVideo
-from utils import search_location, query_chatgpt
+import time
 import asyncio
-import logger_config
+from models import ProcessedVideo
 
+# Import the functions used in run_app.py
+from data_extractor import extract_data
+from extract_text_from_video import main as extract_text_main
+from extract_transcription_from_audio import main as extract_transcription_main
+from utils import search_location_v2, query_chatgpt_v2
+import logger_config
 
 logger = logger_config.get_logger(__name__)
 
@@ -17,67 +20,54 @@ def process_video(url):
     logger.info(f"Starting to process video: {url}")
 
     try:
-        logger.info("Extracting data from URL")
+        # Measure processing time
+        start_time = time.time()
 
-        # Run the asynchronous functions using asyncio.run
-        video_id, video_file, audio_file, description = asyncio.run(extract_data(url))
-        texts, audio_transcription = asyncio.run(analyze_video_content(video_file))
+        # Define an asynchronous inner function to run async code
+        async def process():
+            # Extract data
+            video_id, video_file, audio_file, description = await extract_data(url)
+            logger.info(f"Video ID: {video_id}")
+            logger.info(f"Video File: {video_file}")
+            logger.info(f"Audio File: {audio_file}")
+            logger.info(f"Description: {description}")
 
-        logger.info("Video content analyzed")
-        
-        logger.info(f"Description: {description}")
-        logger.info(f"audio_transcription: {audio_transcription}")
-        logger.info(f"texts: {texts}")
-        
-        chatgpt_query = f"""
-        Description: {description}
-        Transcription: {audio_transcription}
-        Text in images: {texts}
-        
-        Given the above information from a TikTok video, can you return any place of interest that is being recommended? 
-        Please return the results with one recommendation per row, and if you know the city or town, add it in the same row as comma-separated.
-        If you know the type of place that is being recommended (restaurant, town, museum...) also add as comma-separated.
-        
-        Example: Maseria Moroseta, Italy, Restaurant
+            # Extract texts from video
+            logger.info("Extracting texts from video...")
+            texts, video_duration = extract_text_main(video_file)
 
-        If you cannot find any place of interest, make sure you return as your whole message "No places of interest found".
+            # Extract transcription from audio
+            logger.info("Extracting transcription from audio...")
+            transcription = extract_transcription_main(audio_file)
+            logger.info(f"Transcription: {transcription}")
 
-        """
-        
-        logger.info("Querying ChatGPT")
-        recommendations = query_chatgpt(chatgpt_query)
-        if "No places of interest found" in recommendations:
-            recommendations = "No places of interest found"
-        
-            logger.info(f"ChatGPT recommendations: {recommendations}")
-        
-        google_map_links = {}
-        # Split the string into lines
-        places = recommendations.splitlines()
-        logger.info('Places recommended: ' + str(places))
+            # Query ChatGPT
+            logger.info("Querying ChatGPT...")
+            recommendations = query_chatgpt_v2(description, texts, transcription)
 
-        # Get Google Maps links
-        google_map_dict = {}
-        google_map_links = []
-        for location in places:
-            try:
-                location = location.strip()  # Remove any leading/trailing
-                location_info = search_location(location)
-            except Exception as e:
-                logger.error(f"Error searching location: {str(e)}", exc_info=True)
-                location_info = ''
-                continue
+            # Search locations on Google Maps
+            logger.info("Searching locations on Google Maps...")
+            google_map_dict = search_location_v2(recommendations)
+            logger.info(f"Google Map Links: {google_map_dict}")
 
-            if location_info:
-                
-                google_map_links.append(location_info['google_maps_link'])
-                google_map_dict[location] = location_info['google_maps_link']
-        
-        logger.info("Updating database with results")
-        ProcessedVideo.update_results(url, google_map_dict)
-        
+            # Update database with results
+            logger.info("Updating database with results")
+            ProcessedVideo.update_results(url, google_map_dict)
+
+            return google_map_dict, video_duration
+
+        # Run the async function
+        loop = asyncio.get_event_loop()
+        google_map_dict, video_duration = loop.run_until_complete(process())
+
+        end_time = time.time()
+        processing_time = end_time - start_time
+        logger.info(f"Total Processing time: {processing_time:.2f} seconds")
+        logger.info(f"Video duration: {video_duration:.2f} seconds")
         logger.info("Processing completed successfully")
+
         return google_map_dict
+
     except Exception as e:
         logger.error(f"Error processing video: {str(e)}", exc_info=True)
-        raise
+        return {'error': str(e)}  
