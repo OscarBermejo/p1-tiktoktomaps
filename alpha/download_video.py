@@ -10,7 +10,7 @@ from data_extractor import extract_data
 import logger_config
 
 async def extract_data_integration():
-    url = "https://www.tiktok.com/@mariacoroado/video/7306202076164410656?q=best%20restaurant%20in%20rome&t=1728208019892"
+    url = "https://www.tiktok.com/@desarab33/video/7089524798627253510?q=best%20restaurant%20in%20barcelona&t=1728658615290"
     video_id, video_file, audio_file, description = await extract_data(url)
     return video_id, video_file, audio_file, description
 

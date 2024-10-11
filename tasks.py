@@ -4,9 +4,10 @@ from celery_app import celery_app
 import time
 import asyncio
 from models import ProcessedVideo
+from concurrent.futures import ThreadPoolExecutor
 
 # Import the functions used in run_app.py
-from data_extractor import extract_data
+from download_video import extract_data
 from extract_text_from_video import main as extract_text_main
 from extract_transcription_from_audio import main as extract_transcription_main
 from utils import search_location_v2, query_chatgpt_v2
@@ -25,30 +26,37 @@ def process_video(url):
 
         # Define an asynchronous inner function to run async code
         async def process():
-            # Extract data
+            # Call the asynchronous function
             video_id, video_file, audio_file, description = await extract_data(url)
             logger.info(f"Video ID: {video_id}")
             logger.info(f"Video File: {video_file}")
             logger.info(f"Audio File: {audio_file}")
             logger.info(f"Description: {description}")
 
-            # Extract texts from video
-            logger.info("Extracting texts from video...")
-            texts, video_duration = extract_text_main(video_file)
-
-            # Extract transcription from audio
-            logger.info("Extracting transcription from audio...")
-            transcription = extract_transcription_main(audio_file)
-            logger.info(f"Transcription: {transcription}")
+            # Create a ThreadPoolExecutor with 2 worker threads
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                # Submit the extract_text_from_video function to the executor
+                text_future = executor.submit(extract_text_main, video_file, video_id)
+                
+                # Submit the extract_transcription_from_audio function to the executor
+                transcription_future = executor.submit(extract_transcription_main, audio_file)
+                
+                # Wait for both functions to complete and get the results
+                texts, video_duration = text_future.result()
+                transcription = transcription_future.result()
 
             # Query ChatGPT
-            logger.info("Querying ChatGPT...")
+            logger.info(f"Querying ChatGPT...")
             recommendations = query_chatgpt_v2(description, texts, transcription)
-
-            # Search locations on Google Maps
-            logger.info("Searching locations on Google Maps...")
+            
+            # Searching locations in Google Maps
             google_map_dict = search_location_v2(recommendations)
             logger.info(f"Google Map Links: {google_map_dict}")
+
+            end_time = time.time()
+            processing_time = end_time - start_time
+            logger.info(f"Total Processing time: {processing_time:.2f} seconds")
+            logger.info(f"Video duration: {video_duration:.2f} seconds")
 
             # Update database with results
             logger.info("Updating database with results")

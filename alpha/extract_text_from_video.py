@@ -127,7 +127,8 @@ def contains_text(image, lang='eng', min_conf=60, min_text_height=5, min_text_wi
     return text_content.strip() if text_density >= min_text_density else ''
 
 # Function to process a single frame (upload and extract text)
-def process_frame(frame_path, s3_bucket_name, s3_object_name):
+def process_frame(frame_path, s3_bucket_name, video_id, frame_number):
+    s3_object_name = f"frames/{video_id}/frame{frame_number}.jpg"
     upload_to_s3(frame_path, s3_bucket_name, s3_object_name)
     text = extract_text_from_image(s3_bucket_name, s3_object_name)
     return text
@@ -147,7 +148,7 @@ def resize_image_aspect_ratio(image, max_width=None, max_height=None):
     return resized
 
 # Function to extract and process frames from a video
-def extract_and_process_frames(video_path, output_folder, frame_interval, max_width=None, max_height=None, lang='eng'):
+def extract_and_process_frames(video_path, output_folder, frame_interval, video_id, max_width=None, max_height=None, lang='eng'):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -205,7 +206,7 @@ def extract_and_process_frames(video_path, output_folder, frame_interval, max_wi
                         logger.info(f"Extracted {frame_filename}")
                         s3_object_name = f"frames/frame{current_frame}.jpg"
                         # Process the frame in parallel
-                        future = executor.submit(process_frame, frame_filename, s3_bucket_name, s3_object_name)
+                        future = executor.submit(process_frame, frame_filename, s3_bucket_name, video_id, current_frame)
                         processed_text_boxes.add(text_content)
                         all_extracted_texts.append(future.result())
                 else:
@@ -222,7 +223,7 @@ def extract_and_process_frames(video_path, output_folder, frame_interval, max_wi
     return all_extracted_texts
 
 # Main function
-def main(video_path, lang='eng'):
+def main(video_path, video_id, lang='eng'):
 
     # Remove frames folder if exists
     if os.path.exists('frames'):
@@ -246,7 +247,7 @@ def main(video_path, lang='eng'):
     # Resize images to a max width or height while keeping aspect ratio
     max_width = 640  # Adjust as needed
     max_height = None  # Set to None to only use max_width
-    all_texts = extract_and_process_frames(video_path, output_folder, frame_interval, max_width=max_width, max_height=max_height, lang=lang)
+    all_texts = extract_and_process_frames(video_path, output_folder, frame_interval, video_id, max_width=max_width, max_height=max_height, lang=lang)
 
     end_time = time.time()
     processing_time = end_time - start_time
@@ -262,6 +263,7 @@ def main(video_path, lang='eng'):
 # Run the script
 if __name__ == "__main__":
     video_file_path = '/home/ec2-user/tiktok-extractor-v2/files/video/7185551271389072682.mp4'  # Replace with your video file path
+    video_id = '7185551271389072682'  # Extract this from the file name or pass it as an argument
     lang = 'eng'
-    extracted_texts = main(video_file_path, lang=lang)
+    extracted_texts = main(video_file_path, video_id, lang=lang)
     logger.info("Extracted Texts:", extracted_texts)
