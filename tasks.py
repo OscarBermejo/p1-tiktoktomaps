@@ -60,22 +60,25 @@ def process_video(url):
 
             # Update database with results
             logger.info("Updating database with results")
-            ProcessedVideo.update_results(url, google_map_dict)
+            ProcessedVideo.update_results(url, google_map_dict, video_id, video_duration, processing_time)
 
-            return google_map_dict, video_duration
+            return google_map_dict, video_duration, video_id, processing_time
 
         # Run the async function
         loop = asyncio.get_event_loop()
-        google_map_dict, video_duration = loop.run_until_complete(process())
+        google_map_dict, video_duration, video_id, processing_time = loop.run_until_complete(process())
 
-        end_time = time.time()
-        processing_time = end_time - start_time
         logger.info(f"Total Processing time: {processing_time:.2f} seconds")
         logger.info(f"Video duration: {video_duration:.2f} seconds")
         logger.info("Processing completed successfully")
 
-        return google_map_dict
+        return {
+            'results': google_map_dict, 
+            'video_id': video_id, 
+            'video_duration': video_duration, 
+            'processing_time': processing_time
+        }
 
     except Exception as e:
         logger.error(f"Error processing video: {str(e)}", exc_info=True)
-        return {'error': str(e)}  
+        return {'error': str(e)}

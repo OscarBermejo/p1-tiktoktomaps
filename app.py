@@ -118,7 +118,12 @@ def result(task_id):
         processed_video = ProcessedVideo.get_by_task_id(task_id)
         if processed_video and processed_video.results:
             logger.info(f"Results found for task {task_id}")
-            return render_template('result.html', links=processed_video.results, error=None)
+            return render_template('result.html', 
+                                   links=processed_video.results, 
+                                   video_id=processed_video.video_id,
+                                   video_duration=processed_video.video_duration,
+                                   processing_time=processed_video.processing_time,
+                                   error=None)
         else:
             logger.warning(f"No results found for task {task_id}")
             return render_template('result.html', links=None, error='No results found')
@@ -186,6 +191,16 @@ def check_task(task_id):
     if task.ready():
         logger.info(f"Task {task_id} is completed")
         if task.successful():
+            # Update the database with the results
+            processed_video = ProcessedVideo.get_by_task_id(task_id)
+            if processed_video:
+                ProcessedVideo.update_results(
+                    processed_video.url, 
+                    task.result.get('results'),
+                    video_id=task.result.get('video_id'),
+                    video_duration=task.result.get('video_duration'),
+                    processing_time=task.result.get('processing_time')
+                )
             return jsonify({'status': 'completed', 'result': task.result})
         else:
             # Task failed

@@ -73,25 +73,15 @@ class Database:
             raise
 
 class ProcessedVideo:
-    def __init__(self, url, task_id, results=None):
+    def __init__(self, url, task_id, video_id=None, video_duration=None, processing_time=None, results=None):
         self.url = url
         self.task_id = task_id
+        self.video_id = video_id
+        self.video_duration = video_duration
+        self.processing_time = processing_time
         self.results = results
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
-
-    @staticmethod
-    def add(url, task_id, results=None):
-        with Database() as db:
-            query = """
-            INSERT INTO processed_videos (url, task_id, results)
-            VALUES (%s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-            task_id = VALUES(task_id),
-            results = VALUES(results)
-            """
-            params = (url, task_id, json.dumps(results) if results else None)
-            db.execute_query(query, params)
 
     @staticmethod
     def create_table():
@@ -102,6 +92,9 @@ class ProcessedVideo:
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 url VARCHAR(255) NOT NULL UNIQUE,
                 task_id VARCHAR(36) NOT NULL UNIQUE,
+                video_id VARCHAR(255),
+                video_duration FLOAT,
+                processing_time FLOAT,
                 results JSON,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -115,6 +108,22 @@ class ProcessedVideo:
                 raise
 
     @staticmethod
+    def add(url, task_id, video_id=None, video_duration=None, processing_time=None, results=None):
+        with Database() as db:
+            query = """
+            INSERT INTO processed_videos (url, task_id, video_id, video_duration, processing_time, results)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+            task_id = VALUES(task_id),
+            video_id = VALUES(video_id),
+            video_duration = VALUES(video_duration),
+            processing_time = VALUES(processing_time),
+            results = VALUES(results)
+            """
+            params = (url, task_id, video_id, video_duration, processing_time, json.dumps(results) if results else None)
+            db.execute_query(query, params)
+
+    @staticmethod
     def get_by_url(url):
         logger.info(f"Retrieving processed video by URL: {url}")
         with Database() as db:
@@ -123,9 +132,9 @@ class ProcessedVideo:
                 cursor = db.execute_query(query, (url,))
                 result = cursor.fetchone()
                 if result:
-                    id, url, task_id, results, created_at, updated_at = result
+                    id, url, task_id, video_id, video_duration, processing_time, results, created_at, updated_at = result
                     logger.info(f"Found processed video: Task ID={task_id}")
-                    return ProcessedVideo(url, task_id, json.loads(results) if results else None)
+                    return ProcessedVideo(url, task_id, video_id, video_duration, processing_time, json.loads(results) if results else None)
                 logger.info("No processed video found for the given URL")
                 return None
             except Error as e:
@@ -133,11 +142,15 @@ class ProcessedVideo:
                 raise
 
     @staticmethod
-    def update_results(url, results):
+    def update_results(url, results, video_id=None, video_duration=None, processing_time=None):
         logger.info(f"Updating results for processed video: URL={url}")
         with Database() as db:
-            query = "UPDATE processed_videos SET results = %s, updated_at = %s WHERE url = %s"
-            params = (json.dumps(results), datetime.now(), url)
+            query = """
+            UPDATE processed_videos 
+            SET results = %s, video_id = %s, video_duration = %s, processing_time = %s, updated_at = %s 
+            WHERE url = %s
+            """
+            params = (json.dumps(results), video_id, video_duration, processing_time, datetime.now(), url)
             try:
                 db.execute_query(query, params)
                 logger.info("Results updated successfully")
@@ -154,9 +167,9 @@ class ProcessedVideo:
                 cursor = db.execute_query(query, (task_id,))
                 result = cursor.fetchone()
                 if result:
-                    id, url, task_id, results, created_at, updated_at = result
+                    id, url, task_id, video_id, video_duration, processing_time, results, created_at, updated_at = result
                     logger.info(f"Found processed video: URL={url}")
-                    return ProcessedVideo(url, task_id, json.loads(results) if results else None)
+                    return ProcessedVideo(url, task_id, video_id, video_duration, processing_time, json.loads(results) if results else None)
                 logger.info("No processed video found for the given task ID")
                 return None
             except Error as e:
