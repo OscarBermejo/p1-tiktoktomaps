@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for, f
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from werkzeug.security import check_password_hash
 from celery.result import AsyncResult
-from models import ProcessedVideo, User
+from models import ProcessedVideo, User, UserProcessedVideo
 from utils import validate_tiktok_url
 import logger_config
 from celery_app import celery_app  
@@ -29,7 +29,7 @@ logger.info(f"CELERY_RESULT_BACKEND: {app.config['CELERY_RESULT_BACKEND']}")
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.get_by_email(user_id)
+    return User.get_by_id(user_id)  
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -38,13 +38,17 @@ def login():
         password = request.form['password']
         user = User.get_by_email(email)
         logger.info(f'user: {user}')
-        if user and check_password_hash(user.password_hash, password):
-            login_user(user)
-            flash('Logged in successfully.')
-            return redirect(url_for('index'))
+        if user:
+            if check_password_hash(user.password_hash, password):
+                login_user(user)
+                logger.info(f"User {email} logged in successfully")
+                flash('Logged in successfully.')
+                return redirect(url_for('index'))
+            else:
+                logger.info(f"Invalid password for user: {email}")
         else:
-            flash('Invalid username or password')
-            logger.info(f"Invalid username or password")
+            logger.info(f"No user found with email: {email}")
+        flash('Invalid email or password')
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -72,6 +76,9 @@ def logout():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     logger.info("Accessing index route")
+    logger.info(f"User authenticated: {current_user.is_authenticated}")
+    if current_user.is_authenticated:
+        logger.info(f"Current user: {current_user.email}")
     if request.method == 'POST':
         tiktok_url = request.form['tiktok_url']
         logger.info(f'Extracted URL from web: {tiktok_url}')
@@ -92,12 +99,13 @@ def index():
 
         # If we reach here, the video hasn't been processed yet
         logger.info('Video not processed yet. Creating a new task in Celery')
-        task = process_video.delay(tiktok_url)
+        task = process_video.delay(tiktok_url, current_user.email)
         logger.info(f'Celery task created. Task ID: {task.id}')
 
         logger.info(f'Saving celery task info to database. Task ID: {task.id}')
         try:
-            ProcessedVideo.add(url=tiktok_url, task_id=task.id)
+            processed_video = ProcessedVideo.add(url=tiktok_url, task_id=task.id)
+            UserProcessedVideo.add(current_user.id, processed_video.id)
             logger.info('Task info saved to database successfully')
         except Exception as e:
             logger.error(f'Error saving task info to database: {str(e)}')
@@ -134,7 +142,11 @@ def result(task_id):
 @app.route('/process', methods=['POST'])
 def process():
     if not current_user.is_authenticated:
-        return jsonify({'error': 'Authentication required'}), 401
+        logger.warning("Unauthenticated user tried to access /process")
+        return jsonify({
+            'error': 'Authentication required',
+            'message': 'You are not logged in. Please go to the login page to use this feature.'
+        }), 401
 
     data = request.get_json()
     logger.info(f"Received data: {data}")
@@ -152,9 +164,12 @@ def process():
 
     logger.info('Checking if video has been processed before')
     processed_video = ProcessedVideo.get_by_url(url=tiktok_url)
+    
     if processed_video:
         logger.info(f'Video already processed. Task ID: {processed_video.task_id}')
         if processed_video.results:
+            # Add record to UserProcessedVideo
+            UserProcessedVideo.add(current_user.id, processed_video.id)
             return jsonify({
                 'status': 'completed',
                 'result': processed_video.results,
@@ -162,11 +177,15 @@ def process():
             })
         else:
             # If we have a task_id but no results, it might still be processing
+            # Still add a record to UserProcessedVideo
+            logger.info(f"Adding record to UserProcessedVideo for processed_video: {processed_video.id}")
+            UserProcessedVideo.add(current_user.id, processed_video.id)
             return jsonify({'status': 'processing', 'task_id': processed_video.task_id})
 
     logger.info('Creating a new task in Celery')
     try:
-        task = process_video.delay(tiktok_url)
+        # Pass the user's email to the Celery task
+        task = process_video.delay(tiktok_url, current_user.email)
         logger.info(f'Celery task created. Task ID: {task.id}')
     except Exception as e:
         logger.error(f'Error creating Celery task: {str(e)}')
@@ -174,7 +193,10 @@ def process():
 
     logger.info(f'Saving celery task info to database. Task ID: {task.id}')
     try:
-        ProcessedVideo.add(url=tiktok_url, task_id=task.id)
+        processed_video = ProcessedVideo.add(url=tiktok_url, task_id=task.id)
+        logger.info(f"ProcessedVideo created with id: {processed_video.id}")
+        # Add a record to UserProcessedVideo
+        UserProcessedVideo.add(current_user.id, processed_video.id)
         logger.info('Task info saved to database successfully')
     except Exception as e:
         logger.error(f'Error saving task info to database: {str(e)}')
@@ -194,14 +216,18 @@ def check_task(task_id):
             # Update the database with the results
             processed_video = ProcessedVideo.get_by_task_id(task_id)
             if processed_video:
-                ProcessedVideo.update_results(
-                    processed_video.url, 
-                    task.result.get('results'),
-                    video_id=task.result.get('video_id'),
-                    video_duration=task.result.get('video_duration'),
-                    processing_time=task.result.get('processing_time')
-                )
-            return jsonify({'status': 'completed', 'result': task.result})
+                if task.result.get('results'):
+                    ProcessedVideo.update_results(
+                        processed_video.url, 
+                        task.result.get('results'),
+                        video_id=task.result.get('video_id'),
+                        video_duration=task.result.get('video_duration'),
+                        processing_time=task.result.get('processing_time')
+                    )
+                return jsonify({'status': 'completed', 'result': task.result})
+            else:
+                logger.warning(f"No processed video found for task_id: {task_id}")
+                return jsonify({'status': 'completed', 'result': None})
         else:
             # Task failed
             error_msg = str(task.result) if task.result else "Unknown error occurred"

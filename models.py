@@ -6,6 +6,8 @@ import logger_config
 from flask_login import UserMixin
 import sys
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 # Add the directory above the current one to the system path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -73,7 +75,8 @@ class Database:
             raise
 
 class ProcessedVideo:
-    def __init__(self, url, task_id, video_id=None, video_duration=None, processing_time=None, results=None):
+    def __init__(self, id, url, task_id, video_id=None, video_duration=None, processing_time=None, results=None):
+        self.id = id
         self.url = url
         self.task_id = task_id
         self.video_id = video_id
@@ -108,20 +111,22 @@ class ProcessedVideo:
                 raise
 
     @staticmethod
-    def add(url, task_id, video_id=None, video_duration=None, processing_time=None, results=None):
+    def add(url, task_id):
+        logger.info(f"Adding new processed video: URL={url}, Task ID={task_id}")
         with Database() as db:
             query = """
-            INSERT INTO processed_videos (url, task_id, video_id, video_duration, processing_time, results)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-            task_id = VALUES(task_id),
-            video_id = VALUES(video_id),
-            video_duration = VALUES(video_duration),
-            processing_time = VALUES(processing_time),
-            results = VALUES(results)
+            INSERT INTO processed_videos (url, task_id)
+            VALUES (%s, %s)
             """
-            params = (url, task_id, video_id, video_duration, processing_time, json.dumps(results) if results else None)
-            db.execute_query(query, params)
+            params = (url, task_id)
+            try:
+                cursor = db.execute_query(query, params)
+                new_id = cursor.lastrowid  # Get the ID of the newly inserted row
+                logger.info(f"Processed video added successfully with ID: {new_id}")
+                return ProcessedVideo(id=new_id, url=url, task_id=task_id)
+            except Error as e:
+                logger.error(f"Error adding processed video: {e}")
+                raise
 
     @staticmethod
     def get_by_url(url):
@@ -134,7 +139,7 @@ class ProcessedVideo:
                 if result:
                     id, url, task_id, video_id, video_duration, processing_time, results, created_at, updated_at = result
                     logger.info(f"Found processed video: Task ID={task_id}")
-                    return ProcessedVideo(url, task_id, video_id, video_duration, processing_time, json.loads(results) if results else None)
+                    return ProcessedVideo(id, url, task_id, video_id, video_duration, processing_time, json.loads(results) if results else None)
                 logger.info("No processed video found for the given URL")
                 return None
             except Error as e:
@@ -169,27 +174,23 @@ class ProcessedVideo:
                 if result:
                     id, url, task_id, video_id, video_duration, processing_time, results, created_at, updated_at = result
                     logger.info(f"Found processed video: URL={url}")
-                    return ProcessedVideo(url, task_id, video_id, video_duration, processing_time, json.loads(results) if results else None)
+                    return ProcessedVideo(id, url, task_id, video_id, video_duration, processing_time, json.loads(results) if results else None)
                 logger.info("No processed video found for the given task ID")
                 return None
             except Error as e:
                 logger.error(f"Error retrieving processed video: {e}")
                 raise
 
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
-
-# ... (keep your existing imports and Database class)
-
 class User(UserMixin):
-    def __init__(self, email, password=None):
+    def __init__(self, id, email, password_hash):
+        self.id = id
         self.email = email
-        self.password_hash = generate_password_hash(password) if password else None
+        self.password_hash = password_hash
         self.created_at = datetime.now()
         self.last_login = None
 
     def get_id(self):
-        return self.email
+        return str(self.id)
 
     @staticmethod
     def create_table():
@@ -225,7 +226,8 @@ class User(UserMixin):
             try:
                 db.execute_query(query, params)
                 logger.info("User added successfully")
-                return User(email, password)
+                # Fetch the newly created user
+                return User.get_by_email(email)
             except Error as e:
                 logger.error(f"Error adding user: {e}")
                 raise
@@ -254,14 +256,13 @@ class User(UserMixin):
     def get_by_email(email):
         logger.info(f"Retrieving user by email: {email}")
         with Database() as db:
-            query = "SELECT * FROM users WHERE email = %s"
+            query = "SELECT id, email, password_hash, created_at, last_login FROM users WHERE email = %s"
             try:
                 cursor = db.execute_query(query, (email,))
                 result = cursor.fetchone()
                 if result:
                     id, email, password_hash, created_at, last_login = result
-                    user = User(email)
-                    user.password_hash = password_hash
+                    user = User(id, email, password_hash)
                     user.created_at = created_at
                     user.last_login = last_login
                     return user
@@ -285,6 +286,112 @@ class User(UserMixin):
             except Error as e:
                 logger.error(f"Error updating last login: {e}")
                 raise
+
+    @staticmethod
+    def get_by_id(user_id):
+        logger.info(f"Retrieving user by id: {user_id}")
+        with Database() as db:
+            query = "SELECT id, email, password_hash, created_at, last_login FROM users WHERE id = %s"
+            try:
+                cursor = db.execute_query(query, (user_id,))
+                result = cursor.fetchone()
+                if result:
+                    id, email, password_hash, created_at, last_login = result
+                    user = User(id, email, password_hash)
+                    user.created_at = created_at
+                    user.last_login = last_login
+                    return user
+                return None
+            except Error as e:
+                logger.error(f"Error retrieving user: {e}")
+                raise
+
+class UserProcessedVideo:
+    def __init__(self, user_id, processed_video_id, created_at=None):
+        self.user_id = user_id
+        self.processed_video_id = processed_video_id
+        self.created_at = created_at or datetime.now()
+
+    @staticmethod
+    def create_table():
+        logger.info("Attempting to create user_processed_videos table")
+        with Database() as db:
+            query = """
+            CREATE TABLE IF NOT EXISTS user_processed_videos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                processed_video_id INT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id),
+                FOREIGN KEY (processed_video_id) REFERENCES processed_videos(id),
+                UNIQUE KEY user_video_unique (user_id, processed_video_id)
+            )
+            """
+            try:
+                db.execute_query(query)
+                logger.info("user_processed_videos table created successfully")
+            except Error as e:
+                logger.error(f"Error creating user_processed_videos table: {e}")
+                raise
+
+    @staticmethod
+    def add(user_id, processed_video_id):
+        logger.info(f"Adding new user processed video: user_id={user_id}, processed_video_id={processed_video_id}")
+        logger.info(f"Type of user_id: {type(user_id)}, Type of processed_video_id: {type(processed_video_id)}")
+        with Database() as db:
+            query = """
+            INSERT INTO user_processed_videos (user_id, processed_video_id)
+            VALUES (%s, %s)
+            """
+            params = (user_id, processed_video_id)
+            try:
+                db.execute_query(query, params)
+                logger.info("User processed video added successfully")
+            except IntegrityError as e:
+                logger.warning(f"User has already processed this video: {e}")
+            except Error as e:
+                logger.error(f"Error adding user processed video: {e}")
+                raise
+
+    @staticmethod
+    def get_by_user(user_id):
+        logger.info(f"Retrieving processed videos for user_id: {user_id}")
+        with Database() as db:
+            query = """
+            SELECT pv.* FROM user_processed_videos upv
+            JOIN processed_videos pv ON upv.processed_video_id = pv.id
+            WHERE upv.user_id = %s
+            ORDER BY upv.created_at DESC
+            """
+            try:
+                cursor = db.execute_query(query, (user_id,))
+                results = cursor.fetchall()
+                return [ProcessedVideo(*row) for row in results]
+            except Error as e:
+                logger.error(f"Error retrieving user processed videos: {e}")
+                raise
+
+    @staticmethod
+    def get_by_user_and_url(user_id, url):
+        logger.info(f"Retrieving processed video for user_id: {user_id} and url: {url}")
+        with Database() as db:
+            query = """
+            SELECT pv.* FROM user_processed_videos upv
+            JOIN processed_videos pv ON upv.processed_video_id = pv.id
+            WHERE upv.user_id = %s AND pv.url = %s
+            """
+            try:
+                cursor = db.execute_query(query, (user_id, url))
+                result = cursor.fetchone()
+                if result:
+                    return ProcessedVideo(*result)
+                return None
+            except Error as e:
+                logger.error(f"Error retrieving user processed video: {e}")
+                raise
+
+# Create the table when this module is imported
+UserProcessedVideo.create_table()
 
 # Create the table when this module is imported
 User.create_table()

@@ -16,9 +16,9 @@ import logger_config
 logger = logger_config.get_logger(__name__)
 
 @celery_app.task
-def process_video(url):
+def process_video(url, email):
     logger.info(f"Task running on worker")
-    logger.info(f"Starting to process video: {url}")
+    logger.info(f"Starting to process video: {url} for user: {email}")
 
     try:
         # Measure processing time
