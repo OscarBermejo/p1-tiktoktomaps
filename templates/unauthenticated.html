@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Discover and add restaurants, museums, and other places from TikTok videos directly to Google Maps with our easy-to-use tool. Get maps links for any location mentioned in a TikTok video.">
+    <meta name="keywords" content="TikTok to Maps, Add restaurant from TikTok, Google Maps from TikTok, Restaurant TikTok Maps, TikTok locations Google Maps">
+    <meta name="author" content="TikTok to Maps Tool">
+    <title>Authentication Required - TikTok to Maps</title>
+
+    <!-- Bootstrap CDN for styles -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Link to External CSS in /static/css/ -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Link to Lato font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="unauthenticated-page">
+    <div class="background-content">
+        <!-- User info section -->
+        <div class="user-info">
+            <a href="{{ url_for('login') }}">Login</a> | 
+            <a href="{{ url_for('signup') }}">Sign Up</a>
+        </div>
+
+        <div class="container">
+            <!-- Main Header with Primary Keyword -->
+            <h1 class="main-heading">TikTok to Maps: Add Restaurants and Places from TikTok to Google Maps</h1>
+            <p class="cta-text">Easily extract restaurant locations, museums, and attractions from TikTok videos and add them to Google Maps.</p>
+
+            <!-- Form Section (disabled) -->
+            <div class="form-container">
+                <form id="tiktok-form">
+                    <div class="input-wrapper">
+                        <input type="text" name="tiktok_url" id="tiktok-url" placeholder="Enter TikTok URL" disabled>
+                    </div>
+                    <div class="button-wrapper">
+                        <button type="submit" class="btn btn-custom" id="extract-button" disabled>Extract Places from TikTok</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- How It Works Section with Target Keywords -->
+            <div class="how-it-works-section">
+                <h2 class="section-heading">How it works</h2>
+                <p class="how-it-works-subheading">Effortlessly extract locations like restaurants, cafes, and tourist spots from TikTok videos and save them directly to Google Maps for easy navigation and trip planning.</p>
+        
+                <div class="how-it-works-grid">
+                    <div class="how-it-works-item">
+                        <div class="icon-text-wrapper">
+                            <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-upload.png') }}" alt="Icon"></div>
+                            <h3 class="how-it-works-title">Paste TikTok URL</h3>
+                        </div>
+                        <p class="how-it-works-text">Simply paste the URL of any TikTok video featuring restaurants or places.</p>
+                    </div>
+        
+                    <div class="how-it-works-item">
+                        <div class="icon-text-wrapper">
+                            <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-extract.png') }}" alt="Icon"></div>
+                            <h3 class="how-it-works-title">Extract Locations</h3>
+                        </div>
+                        <p class="how-it-works-text">Our tool identifies and extracts the places mentioned in the video.</p>
+                    </div>
+        
+                    <div class="how-it-works-item">
+                        <div class="icon-text-wrapper">
+                            <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-save.png') }}" alt="Icon"></div>
+                            <h3 class="how-it-works-title">Get Maps Links</h3>
+                        </div>
+                        <p class="how-it-works-text">Receive direct Google Maps links for restaurants, cafes, and tourist spots.</p>
+                    </div>
+        
+                    <div class="how-it-works-item">
+                        <div class="icon-text-wrapper">
+                            <div class="icon-inline"><img src="{{ url_for('static', filename='images/icon-go.png') }}" alt="Icon"></div>
+                            <h3 class="how-it-works-title">Save & Explore</h3>
+                        </div>
+                        <p class="how-it-works-text">Save the links and explore the locations on your next trip.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Modal -->
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <!-- Logo at the top of the modal -->
+            <div class="modal-header">
+                <a href="{{ url_for('index') }}">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+                </a>
+            </div>
+            <h2>Authentication Required</h2>
+            <p>You need to be logged in to use this feature. Please go to the login page.</p>
+            <button id="authModalLoginBtn" class="btn btn-custom" onclick="window.location.href='{{ url_for('login') }}'">Go to Login</button>
+        </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

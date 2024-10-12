@@ -143,10 +143,7 @@ def result(task_id):
 def process():
     if not current_user.is_authenticated:
         logger.warning("Unauthenticated user tried to access /process")
-        return jsonify({
-            'error': 'Authentication required',
-            'message': 'You are not logged in. Please go to the login page to use this feature.'
-        }), 401
+        return render_template('unauthenticated.html'), 401
 
     data = request.get_json()
     logger.info(f"Received data: {data}")

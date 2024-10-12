@@ -464,3 +464,136 @@ html, body {
     text-align: center;
     margin-top: 10px;
 }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+}
+
+/* Add this to your existing styles for the modal content */
+.modal-content {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 600px;
+    width: 90%;
+}
+
+/* Style for the authentication modal title */
+.modal-content h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 20px;
+    font-family: 'Lato', sans-serif;
+}
+
+/* Style for the authentication modal subtitle */
+.modal-content p {
+    font-size: 1.25rem;
+    color: #555;
+    margin-bottom: 30px;
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+}
+
+/* Style for the login button in the modal */
+#authModalLoginBtn {
+    background-color: #f43b86;
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    transition: background-color 0.3s ease;
+    width: auto;
+    max-width: 300px;
+    margin-top: 20px;
+}
+
+/* Styles for unauthenticated.html */
+.unauthenticated-page {
+    position: relative;
+    min-height: 100vh;
+}
+
+.background-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.3;
+    overflow: auto;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    z-index: 1001;
+    max-width: 400px;
+    width: 90%;
+}
+
+.modal-header {
+    margin-bottom: 20px;
+}
+
+.modal-content .logo {
+    max-width: 150px;
+    height: auto;
+}
+
+/* User info section */
+.background-content .user-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+/* Disable pointer events on background content */
+.background-content .container,
+.background-content .user-info {
+    pointer-events: none;
+}
+
+/* Enable pointer events on links in user info */
+.background-content .user-info a {
+    pointer-events: auto;
+}

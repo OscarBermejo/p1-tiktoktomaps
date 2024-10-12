@@ -129,11 +129,21 @@
         </div>
     </div>
 
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <h2>Authentication Required</h2>
+            <p>You need to be logged in to use this feature. Please go to the login page.</p>
+            <button id="authModalLoginBtn">Go to Login</button>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var form = document.getElementById('tiktok-form');
             var urlInput = document.getElementById('tiktok-url');
             var submitButton = document.getElementById('extract-button');
+            var authModal = document.getElementById('authModal');
+            var authModalLoginBtn = document.getElementById('authModalLoginBtn');
 
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -151,26 +161,28 @@
                 })
                 .then(response => {
                     console.log('Response status:', response.status);
-                    if (!response.ok) {
+                    if (response.status === 401) {
+                        // Handle unauthenticated case
+                        return response.text().then(html => {
+                            document.body.innerHTML = html;
+                        });
+                    } else if (!response.ok) {
                         return response.json().then(err => { throw new Error(err.error || 'Server error') });
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Response data:', data);
-                    if (data.error) {
-                        throw new Error(data.error);
-                    } else if (data.status === 'completed' && data.result) {
-                        // Redirect to result page for completed tasks
-                        window.location.href = '{{ url_for("result", task_id="") }}' + data.task_id;
-                    } else if (data.status === 'processing' && data.task_id) {
-                        // Redirect to waiting page for processing tasks
-                        window.location.href = '{{ url_for("waiting", task_id="") }}' + data.task_id;
-                    } else if (data.task_id) {
-                        // Fallback for new tasks
-                        window.location.href = '{{ url_for("waiting", task_id="") }}' + data.task_id;
-                    } else {
-                        throw new Error('Unexpected response from server');
+                    if (typeof data === 'object') {
+                        console.log('Response data:', data);
+                        if (data.status === 'completed' && data.result) {
+                            window.location.href = '{{ url_for("result", task_id="") }}' + data.task_id;
+                        } else if (data.status === 'processing' && data.task_id) {
+                            window.location.href = '{{ url_for("waiting", task_id="") }}' + data.task_id;
+                        } else if (data.task_id) {
+                            window.location.href = '{{ url_for("waiting", task_id="") }}' + data.task_id;
+                        } else {
+                            throw new Error('Unexpected response from server');
+                        }
                     }
                 })
                 .catch((error) => {
@@ -181,6 +193,21 @@
                     submitButton.disabled = false;
                 });
             });
+
+            function showAuthModal() {
+                authModal.style.display = 'block';
+            }
+
+            authModalLoginBtn.addEventListener('click', function() {
+                window.location.href = '{{ url_for("login") }}';
+            });
+
+            // Close the modal when clicking outside of it
+            window.onclick = function(event) {
+                if (event.target == authModal) {
+                    authModal.style.display = "none";
+                }
+            }
         });
     </script>
 
