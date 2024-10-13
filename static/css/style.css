@@ -597,3 +597,190 @@ html, body {
 .background-content .user-info a {
     pointer-events: auto;
 }
+
+.auth-form-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+    margin: 20px auto;
+}
+
+.auth-form .form-group {
+    margin-bottom: 15px;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.auth-form .form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.auth-form .btn-custom {
+    width: 100%;
+}
+
+/* Styles for unauthenticated page */
+.unauthenticated-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-form-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.auth-form-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.auth-form .btn-custom {
+    width: 100%;
+}
+
+.auth-form p {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Ensure the background content is visible but blurred */
+.background-content {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    filter: blur(5px);
+    z-index: -1;
+}
+
+/* Adjust user info for unauthenticated page */
+.unauthenticated-page .user-info {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+/* Common styles for auth forms */
+.auth-form {
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.auth-form h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.auth-form .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.auth-form .btn-custom {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.auth-form .btn-custom:hover {
+    background-color: #0056b3;
+}
+
+.auth-form p {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Specific styles for modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    max-width: 400px;
+    width: 100%;
+}
+
+/* Adjustments for background content */
+.background-content {
+    filter: blur(5px);
+    -webkit-filter: blur(5px);
+}
+
+/* ... (keep other existing styles) ... */
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 5px;
+    max-width: 400px;
+    width: 100%;
+}
