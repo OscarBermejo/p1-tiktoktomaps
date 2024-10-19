@@ -9,6 +9,7 @@ from celery_app import celery_app
 from tasks import process_video 
 import sys
 import os
+from email_sender import send_welcome_email  # Import the new function
 
 # Add the directory above the current one to the system path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -61,6 +62,10 @@ def signup():
         else:       
             new_user = User.add(email, password)
             login_user(new_user)
+            
+            # Send welcome email
+            send_welcome_email(email)
+            
             flash('Registered successfully. You are now logged in.')
             return redirect(url_for('index'))
       

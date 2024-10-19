@@ -257,6 +257,8 @@ def main(video_path, video_id, lang='eng'):
     logger.info(f"Video duration: {video_duration:.2f} seconds")
 
     print(all_texts)
+    print(f"Video duration: {video_duration:.2f} seconds")
+    print(f"Processing time: {processing_time:.2f} seconds")
 
     return all_texts, video_duration
 
@@ -266,4 +268,3 @@ if __name__ == "__main__":
     video_id = '7185551271389072682'  # Extract this from the file name or pass it as an argument
     lang = 'eng'
     extracted_texts = main(video_file_path, video_id, lang=lang)
-    logger.info("Extracted Texts:", extracted_texts)
