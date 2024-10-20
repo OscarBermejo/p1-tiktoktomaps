@@ -1,13 +1,13 @@
 import mysql.connector
 from mysql.connector import Error, pooling, IntegrityError
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import logger_config
 from flask_login import UserMixin
 import sys
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+import secrets
 
 # Add the directory above the current one to the system path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -188,6 +188,8 @@ class User(UserMixin):
         self.password_hash = password_hash
         self.created_at = datetime.now()
         self.last_login = None
+        self.reset_token = None
+        self.reset_token_expiry = None
 
     def get_id(self):
         return str(self.id)
@@ -199,11 +201,12 @@ class User(UserMixin):
             query = """
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) UNIQUE NOT NULL,
                 email VARCHAR(100) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_login TIMESTAMP NULL
+                last_login TIMESTAMP NULL,
+                reset_token VARCHAR(100) NULL,
+                reset_token_expiry TIMESTAMP NULL
             )
             """
             try:
@@ -275,11 +278,11 @@ class User(UserMixin):
         return check_password_hash(self.password_hash, password)
 
     @staticmethod
-    def update_last_login(username):
-        logger.info(f"Updating last login for user: {username}")
+    def update_last_login(user_id):
+        logger.info(f"Updating last login for user ID: {user_id}")
         with Database() as db:
-            query = "UPDATE users SET last_login = %s WHERE username = %s"
-            params = (datetime.now(), username)
+            query = "UPDATE users SET last_login = %s WHERE id = %s"
+            params = (datetime.now(), user_id)
             try:
                 db.execute_query(query, params)
                 logger.info("Last login updated successfully")
@@ -304,6 +307,59 @@ class User(UserMixin):
                 return None
             except Error as e:
                 logger.error(f"Error retrieving user: {e}")
+                raise
+
+    def set_password_reset_token(self):
+        self.reset_token = secrets.token_urlsafe(32)
+        self.reset_token_expiry = datetime.now() + timedelta(hours=1)
+        with Database() as db:
+            query = "UPDATE users SET reset_token = %s, reset_token_expiry = %s WHERE id = %s"
+            params = (self.reset_token, self.reset_token_expiry, self.id)
+            try:
+                db.execute_query(query, params)
+                logger.info(f"Password reset token set for user ID: {self.id}")
+            except Error as e:
+                logger.error(f"Error setting password reset token: {e}")
+                raise
+
+    @staticmethod
+    def get_by_reset_token(token):
+        logger.info(f"Retrieving user by reset token")
+        with Database() as db:
+            query = """
+            SELECT id, email, password_hash, created_at, last_login, reset_token_expiry 
+            FROM users WHERE reset_token = %s
+            """
+            try:
+                cursor = db.execute_query(query, (token,))
+                result = cursor.fetchone()
+                if result:
+                    id, email, password_hash, created_at, last_login, reset_token_expiry = result
+                    user = User(id, email, password_hash)
+                    user.created_at = created_at
+                    user.last_login = last_login
+                    user.reset_token = token
+                    user.reset_token_expiry = reset_token_expiry
+                    return user
+                return None
+            except Error as e:
+                logger.error(f"Error retrieving user by reset token: {e}")
+                raise
+
+    def reset_password(self, new_password):
+        self.password_hash = generate_password_hash(new_password)
+        with Database() as db:
+            query = """
+            UPDATE users 
+            SET password_hash = %s, reset_token = NULL, reset_token_expiry = NULL 
+            WHERE id = %s
+            """
+            params = (self.password_hash, self.id)
+            try:
+                db.execute_query(query, params)
+                logger.info(f"Password reset for user ID: {self.id}")
+            except Error as e:
+                logger.error(f"Error resetting password: {e}")
                 raise
 
 class UserProcessedVideo:

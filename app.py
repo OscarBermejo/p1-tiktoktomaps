@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify, redirect, url_for, flash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
-from werkzeug.security import check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 from celery.result import AsyncResult
 from models import ProcessedVideo, User, UserProcessedVideo
 from utils import validate_tiktok_url
@@ -9,7 +9,9 @@ from celery_app import celery_app
 from tasks import process_video 
 import sys
 import os
-from email_sender import send_welcome_email  # Import the new function
+from email_sender import send_welcome_email, send_password_reset_email  # Import the new functions
+import secrets
+from datetime import datetime, timedelta
 
 # Add the directory above the current one to the system path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -239,6 +241,34 @@ def check_task(task_id):
         logger.info(f"Task {task_id} is still processing, state: {task.state}")
         return jsonify({'status': 'processing', 'state': task.state})
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = User.get_by_email(email)
+        if user:
+            user.set_password_reset_token()
+            send_password_reset_email(email, user.reset_token)
+            flash('Password reset link has been sent to your email.')
+            return redirect(url_for('login'))
+        else:
+            flash('Email not found.')
+    return render_template('forgot_password.html')
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    user = User.get_by_reset_token(token)
+    if not user or user.reset_token_expiry < datetime.now():
+        flash('Invalid or expired reset token.')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+        user.reset_password(new_password)
+        flash('Your password has been reset successfully.')
+        return redirect(url_for('login'))
+    
+    return render_template('reset_password.html')
 
 if __name__ == '__main__':
     logger.info("Starting Flask application")

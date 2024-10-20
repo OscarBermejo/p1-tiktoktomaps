@@ -45,6 +45,38 @@ def send_welcome_email(recipient_email):
         print(f"Failed to send welcome email to {recipient_email}. Error: {str(e)}")
 
 
+def send_password_reset_email(recipient_email, reset_token):
+    subject = "Reset Your TikTok To Maps Password"
+    body = f"""
+    Hello,
+
+    You have requested to reset your password for TikTok To Maps.
+
+    Please click on the following link to reset your password:
+    {Config.BASE_URL}/reset_password/{reset_token}
+
+    If you did not request this, please ignore this email.
+
+    Best regards,
+    The TikTok To Maps Team
+    """
+
+    message = MIMEMultipart()
+    message["From"] = SENDER_EMAIL
+    message["To"] = recipient_email
+    message["Subject"] = subject
+
+    message.attach(MIMEText(body, "plain"))
+
+    try:
+        with smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT) as server:
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.send_message(message)
+        print(f"Password reset email sent successfully to {recipient_email}")
+    except Exception as e:
+        print(f"Failed to send password reset email to {recipient_email}. Error: {str(e)}")
+
+
 if __name__ == "__main__":
     
     recipient_email = 'obermejocorrea@gmail.com'
