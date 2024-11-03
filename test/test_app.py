@@ -17,12 +17,13 @@ logger = logger_config.get_logger(__name__)
 def test_process_video():
     # Test URL - replace with a valid TikTok URL
     test_url = "https://www.tiktok.com/@rome.travelers/video/7185551271389072682?q=best%20restaurnat%20in%20rome&t=1727801016442"
+    test_email = "obermejo@live.com"  # Add a test email
 
     with app.app_context():
         logger.info(f"Starting test with URL: {test_url}")
 
-        # Start the Celery task
-        task = process_video.delay(test_url)
+        # Start the Celery task with both url and email
+        task = process_video.delay(test_url, test_email)
         logger.info(f"Task started with ID: {task.id}")
 
         # Wait for the task to complete
